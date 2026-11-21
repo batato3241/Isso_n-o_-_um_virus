@@ -1,0 +1,42 @@
+name: Criar APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v4
+
+      - name: Preparar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Preparar Android
+        uses: android-actions/setup-android@v3
+
+      - name: Preparar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Extrair projeto
+        run: |
+          mkdir projeto
+          unzip -q GatoVirus-projeto.zip -d projeto
+
+      - name: Compilar
+        run: |
+          DIR=$(find projeto -name settings.gradle -o -name settings.gradle.kts | head -n 1 | xargs dirname)
+          gradle -p "$DIR" assembleDebug
+
+      - name: Guardar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: aplicativo-apk
+          path: projeto/**/build/outputs/apk/debug/*.apk
